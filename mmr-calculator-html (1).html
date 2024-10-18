@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Detailed MMR Calculator</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+        th { background-color: #f2f2f2; }
+        input { width: 100%; padding: 5px; margin-bottom: 10px; }
+    </style>
+</head>
+<body>
+    <h1>Detailed MMR Calculator</h1>
+    <label for="tailors">Number of Present Tailors:</label>
+    <input type="number" id="tailors" min="1" value="100" onchange="calculateMMR()">
+    <label for="output">Expected Output (pieces/day):</label>
+    <input type="number" id="output" min="1" value="5000" onchange="calculateMMR()">
+    <table>
+        <thead>
+            <tr>
+                <th>Department</th>
+                <th>Required Workers</th>
+                <th>Calculation</th>
+            </tr>
+        </thead>
+        <tbody id="results">
+        </tbody>
+    </table>
+    <div id="additional-info"></div>
+
+    <script>
+        function calculateMMR() {
+            const tailors = parseInt(document.getElementById('tailors').value);
+            const output = parseInt(document.getElementById('output').value);
+            const resultsBody = document.getElementById('results');
+            const additionalInfo = document.getElementById('additional-info');
+            resultsBody.innerHTML = '';
+
+            const departments = [
+                { name: 'Cutting', workers: Math.ceil(output / 500 * 6), calc: '6 workers per 500 pieces' },
+                { name: 'Stitching - Operators', workers: tailors, calc: 'Based on present tailors' },
+                { name: 'Stitching - Helpers', workers: Math.ceil(tailors * 0.25), calc: '1:1.25 ratio (25 helpers per 100 tailors)' },
+                { name: 'Stitching - Line Checkers', workers: Math.ceil(tailors / 24), calc: '1 checker per 24 operators' },
+                { name: 'Finishing', workers: Math.ceil(output / 400 * 9), calc: '9 workers per 400 pieces' },
+                { name: 'Packing', workers: Math.ceil(output / 1000 * 3), calc: '3 persons per 1000 pieces' },
+                { name: 'Housekeeping and Admin', workers: Math.ceil(output / 1000 * 5), calc: '5 persons per 1000 pieces' },
+                { name: 'Washing', workers: Math.ceil(output / 1000 * 3), calc: '3 persons per 1000 pieces' }
+            ];
+
+            let totalWorkers = 0;
+
+            departments.forEach(dept => {
+                totalWorkers += dept.workers;
+                const row = resultsBody.insertRow();
+                row.insertCell(0).textContent = dept.name;
+                row.insertCell(1).textContent = dept.workers;
+                row.insertCell(2).textContent = dept.calc;
+            });
+
+            const totalRow = resultsBody.insertRow();
+            totalRow.insertCell(0).textContent = 'Total Workers';
+            totalRow.insertCell(1).textContent = totalWorkers;
+            totalRow.insertCell(2).textContent = '';
+
+            const stitchingLines = Math.floor(tailors / 24);
+            const expectedStitchingOutput = stitchingLines * 250;
+            const actualMMR = totalWorkers / tailors;
+
+            additionalInfo.innerHTML = `
+                <p>Stitching Lines: ${stitchingLines} (24 operators per line)</p>
+                <p>Expected Output (based on stitching): ${expectedStitchingOutput} pieces per day (250 pieces per line per day)</p>
+                <p>Actual MMR: ${actualMMR.toFixed(2)} (Total workers / Present tailors)</p>
+            `;
+        }
+
+        calculateMMR();
+    </script>
+</body>
+</html>
